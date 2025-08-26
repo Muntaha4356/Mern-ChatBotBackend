@@ -81,9 +81,6 @@ export const imageMessageController = async(req, res) =>{
         const {prompt, chatId, isPublished} = req.body
         //findthe chat
         const chat = await Chat.findOne({userId, _id:chatId})
-        if (!chat) {
-            return res.json({ success: false, message: "Chat not found" });
-        }
         //push user message
         chat.messages.push({role: "user", 
             content: prompt, 
@@ -91,33 +88,22 @@ export const imageMessageController = async(req, res) =>{
             isImage: false}) //because the prompt is text
 
         //Encode the prompt: The model first encodes your prompt into smaller pieces called tokens
-        // const encodedPrompt = encodeURIComponent(prompt)
+        const encodedPrompt = encodeURIComponent(prompt)
 
             //Construct Image generation URL
-        // const generatedImageUrl = `${process.env.IMAGEKIT_URL_ENDPOINT}/ik-genimg-prompt+${encodedPrompt}/quickgpt/${Date.now()}.png?tr=w-800,h-800`;
-        // console.log("Generated URL:", generatedImageUrl);
-
+        const generatedImageUrl = `${process.env.IMAGEKIT_URL_ENDPOINT}/
+        ik-genimg-prompt+${encodedPrompt}/quickgpt/${Date.now()}.png?tr=w-800,
+        h-800`; 
 
         //Trigger generation by fetching from ImageKit
-        // const aiImageResponse = await axios.get(generatedImageUrl, {responseType: "arraybuffer"})
-        const aiImageResponse = await openai.images.generate({
-            model: "gpt-image-1",
-            prompt,
-            size: "512x512",
-            response_format: "b64_json", 
-        });
-        console.log("aiImageResponse:", aiImageResponse);
-        const base64Image = aiImageResponse.data[0].b64_json;
-
-        
-    
+        const aiImageResponse = await axios.get(generatedImageUrl, {responseType: "arraybuffer"})
         //Give me the raw binary data of the response as an ArrayBuffer (a low-level object for handling bytes in JavaScript)
 
         
         //Convert to Base64: It’s a way to represent binary data (like images, files, audio) using only ASCII text (letters, numbers, +, /, =).
 
-        // const base64Image = `data:image/png;base64,${Buffer.from(aiImageResponse.data,
-        //     "binary").toString('base64')}`
+        const base64Image = `data:image/png;base64,${Buffer.from(aiImageResponse.data,
+            "binary").toString('base64')}`
 
         //Upload to IMageKit media library
         const uploadResponse = await imagekit.upload({
