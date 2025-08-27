@@ -88,11 +88,14 @@ export const imageMessageController = async(req, res) =>{
             isImage: false}) //because the prompt is text
 
         //Encode the prompt: The model first encodes your prompt into smaller pieces called tokens
-        const encodedPrompt = encodeURIComponent(prompt)
+        const encodedPrompt = encodeURIComponent(prompt);
+
+        // Construct the AI Image Generation URL and headers
+        // const aiImageGenEndpoint = "https://imagekit.io/ai-image-gen/ik-genimg-prompt"; // The base endpoint for AI generation
 
             //Construct Image generation URL
         const generatedImageUrl = `${process.env.IMAGEKIT_URL_ENDPOINT}/
-        ik-genimg-prompt+${encodedPrompt}/quickgpt/${Date.now()}.png?tr=w-800,
+        ik-genimg-prompt-${encodedPrompt}/quickgpt/${Date.now()}.png?tr=w-800,
         h-800`; 
 
         //Trigger generation by fetching from ImageKit

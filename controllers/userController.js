@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import jwt from 'jsonwebtoken'
 import bcrypt from "bcryptjs";
+import Chat from "../models/chat.js";
 //Generate token
 const generateToken = (id) => {
     return jwt.sign({id}, process.env.JWT_SECRET, {
@@ -56,3 +57,32 @@ export const getUser = async(req, res) => {
         return res.json({success:false, message: error.message})
     }
 }
+
+
+//API TO GET PUBLISHED IMAGES
+export const getPublishedImages = async(req, res) =>{
+    try {
+        const publishedImageMessages = await Chat.aggregate([
+            {$unwind: "$messages"},
+            {
+
+                $match : {
+                    "messages.isImage": true,
+                    "messages.isPublished": true
+                }},
+                //$project decides which fields to include in the output and how to rename them
+                {
+                    $project:{
+                        _id:0, //_id: 0 → exclude the default Mongo _id field.
+                        imageUrl:"$messages.content",
+                        userName: "$userName"
+                    }
+                }
+            
+        ])
+        res.json({success: true, images: publishedImageMessages.reverse()})
+    } catch (error) {
+        return res.json({success:false, message: error.message})
+    }
+}
+
